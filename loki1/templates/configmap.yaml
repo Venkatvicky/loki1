@@ -6,22 +6,20 @@ metadata:
     app: loki
 data:
   loki.yaml: |
-    {{- with .Values.loki.config }}
-    auth_enabled: {{ .auth_enabled }}
+    auth_enabled: {{ .Values.loki.config.auth_enabled }}
     server:
-      http_listen_port: {{ .server.http_listen_port }}
+      http_listen_port: {{ .Values.loki.config.server.http_listen_port }}
     schema_config:
       configs:
-        - from: {{ .schema_config.configs[0].from }}
-          store: {{ .schema_config.configs[0].store }}
-          object_store: {{ .schema_config.configs[0].object_store }}
-          schema: {{ .schema_config.configs[0].schema }}
+        - from: {{ .Values.loki.config.schema_config.configs | first | .from }}
+          store: {{ .Values.loki.config.schema_config.configs | first | .store }}
+          object_store: {{ .Values.loki.config.schema_config.configs | first | .object_store }}
+          schema: {{ .Values.loki.config.schema_config.configs | first | .schema }}
           index:
-            prefix: {{ .schema_config.configs[0].index.prefix }}
-            period: {{ .schema_config.configs[0].index.period }}
+            prefix: {{ .Values.loki.config.schema_config.configs | first | .index.prefix }}
+            period: {{ .Values.loki.config.schema_config.configs | first | .index.period }}
     storage_config:
       boltdb:
-        directory: {{ .storage_config.boltdb.directory }}
+        directory: {{ .Values.loki.config.storage_config.boltdb.directory }}
       filesystem:
-        directory: {{ .storage_config.filesystem.directory }}
-    {{- end }}
+        directory: {{ .Values.loki.config.storage_config.filesystem.directory }}
