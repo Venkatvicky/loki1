@@ -6,4 +6,4 @@ metadata:
     app: loki
 data:
   loki.yaml: |
-{{ .Values.loki.config | toYaml | indent 4 }}
+    {{ .Values.loki.config | toYaml | indent 4 }}
