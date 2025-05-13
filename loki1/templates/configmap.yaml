@@ -6,4 +6,22 @@ metadata:
     app: loki
 data:
   loki.yaml: |
-    {{ .Values.loki.config | toYaml | indent 4 }}
+    {{- with .Values.loki.config }}
+    auth_enabled: {{ .auth_enabled }}
+    server:
+      http_listen_port: {{ .server.http_listen_port }}
+    schema_config:
+      configs:
+        - from: {{ .schema_config.configs[0].from }}
+          store: {{ .schema_config.configs[0].store }}
+          object_store: {{ .schema_config.configs[0].object_store }}
+          schema: {{ .schema_config.configs[0].schema }}
+          index:
+            prefix: {{ .schema_config.configs[0].index.prefix }}
+            period: {{ .schema_config.configs[0].index.period }}
+    storage_config:
+      boltdb:
+        directory: {{ .storage_config.boltdb.directory }}
+      filesystem:
+        directory: {{ .storage_config.filesystem.directory }}
+    {{- end }}
