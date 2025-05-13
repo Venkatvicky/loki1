@@ -11,13 +11,15 @@ data:
       http_listen_port: {{ .Values.loki.config.server.http_listen_port }}
     schema_config:
       configs:
-        - from: {{ .Values.loki.config.schema_config.configs | first | .from }}
-          store: {{ .Values.loki.config.schema_config.configs | first | .store }}
-          object_store: {{ .Values.loki.config.schema_config.configs | first | .object_store }}
-          schema: {{ .Values.loki.config.schema_config.configs | first | .schema }}
+        {{- range .Values.loki.config.schema_config.configs }}
+        - from: {{ .from }}
+          store: {{ .store }}
+          object_store: {{ .object_store }}
+          schema: {{ .schema }}
           index:
-            prefix: {{ .Values.loki.config.schema_config.configs | first | .index.prefix }}
-            period: {{ .Values.loki.config.schema_config.configs | first | .index.period }}
+            prefix: {{ .index.prefix }}
+            period: {{ .index.period }}
+        {{- end }}
     storage_config:
       boltdb:
         directory: {{ .Values.loki.config.storage_config.boltdb.directory }}
