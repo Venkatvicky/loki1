@@ -47,5 +47,6 @@ spec:
           configMap:
             name: loki-config
         - name: storage
-          persistentVolumeClaim:
-            claimName: loki-pvc
+          hostPath:
+            path: /mnt/data/loki  # Path on the host machine
+            type: DirectoryOrCreate  # Ensures the directory is created if it doesn't exist
