@@ -4,7 +4,7 @@ metadata:
   name: loki-config
   labels:
     app: loki
-  namespace: default
+  namespace: loki1
 data:
   loki.yaml: |
     {{- toYaml .Values.loki.config | nindent 4 }}
