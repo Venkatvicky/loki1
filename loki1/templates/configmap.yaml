@@ -1,41 +1,45 @@
-apiVersion: v1
-kind: ConfigMap
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: loki-config
+  name: loki
+  namespace: loki1
   labels:
     app: loki
-  namespace: loki1
-data:
-  loki.yaml: |
-    auth_enabled: false  # Disable authentication
-
-    server:
-      http_listen_port: 3100  # Port for HTTP API
-      grpc_listen_port: 9095  # Port for gRPC
-      log_level: info         # Log level (info, debug, etc.)
-
-    ingester:
-      wal:
-        dir: /mnt/data/loki/wal  # Write-ahead log directory
-      chunk_target_size: 1048576  # Target size for log chunks (1MB)
-      max_chunk_age: 1h           # Maximum age of log chunks before they are flushed
-
-    storage_config:
-      boltdb_shipper:
-        active_index_directory: /mnt/data/loki/index  # Index directory
-        cache_location: /mnt/data/loki/cache          # Cache location
-        shared_store: filesystem                     # Type of shared storage (filesystem, s3, gcs, etc.)
-      filesystem:
-        directory: /mnt/data/loki/storage  # Storage directory on the local filesystem
-
-    chunk_store_config:
-      max_look_back_period: 0s  # The maximum period Loki looks back for logs
-
-    table_manager:
-      retention_deletes_enabled: true  # Enable retention delete
-      retention_period: 168h          # Retention period for logs (7 days)
-
-    compactor:
-      working_directory: /mnt/data/loki/compactor  # Directory for compactor to work
-      shared_store: filesystem                     # Storage backend for compactor
-      compaction_interval: 1h                      # Interval for compaction
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loki
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      initContainers:
+        - name: init-wal
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /mnt/data/loki && chown -R 10001:10001 /mnt/data/loki"]
+          volumeMounts:
+            - name: loki-storage
+              mountPath: /mnt/data/loki
+      containers:
+        - name: loki
+          image: grafana/loki:2.9.0
+          args:
+            - -config.file=/etc/loki/loki.yaml
+          ports:
+            - containerPort: 3100
+            - containerPort: 9095
+          volumeMounts:
+            - name: loki-storage
+              mountPath: /mnt/data/loki
+            - name: loki-config
+              mountPath: /etc/loki
+              subPath: loki.yaml  # Mounts the loki.yaml file from ConfigMap
+      volumes:
+        - name: loki-storage
+          persistentVolumeClaim:
+            claimName: loki-pvc
+        - name: loki-config
+          configMap:
+            name: loki-config  # Make sure this matches the ConfigMap name
