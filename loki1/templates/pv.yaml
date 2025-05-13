@@ -5,9 +5,11 @@ metadata:
 spec:
   capacity:
     storage: 10Gi
+  volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: gp3-csi
   hostPath:
-    path: /mnt/data/loki
+    path: /mnt/data/loki  # Path on the host node
+    type: DirectoryOrCreate
