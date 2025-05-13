@@ -33,12 +33,7 @@ spec:
           volumeMounts:
             - name: loki-storage
               mountPath: /mnt/data/loki
-            - name: wal-storage
-              mountPath: /wal
       volumes:
         - name: loki-storage
           persistentVolumeClaim:
             claimName: loki-pvc
-        - name: wal-storage
-          persistentVolumeClaim:
-            claimName: wal-pvc
