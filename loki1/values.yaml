@@ -30,11 +30,11 @@ replicaCount: 2
 
 resources:
   requests:
-    cpu: 50m
-    memory: 256Mi
+    cpu: 100m      # Increased request to ensure Loki has enough CPU
+    memory: 512Mi   # Increased memory request
   limits:
-    cpu: 200m
-    memory: 512Mi
+    cpu: 500m      # Increased CPU limit
+    memory: 1Gi     # Increased memory limit
 
 persistence:
   enabled: true
