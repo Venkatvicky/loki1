@@ -20,8 +20,6 @@ spec:
         - name: loki
           image: "{{ .Values.loki.image.repository }}:{{ .Values.loki.image.tag }}"
           securityContext:
-            runAsUser: 0        # Loki's user ID
-            runAsGroup: 0       # Loki's group ID
             fsGroup: 0          # Group for the filesystem
           args:
             - "-config.file=/etc/loki/loki.yaml"
