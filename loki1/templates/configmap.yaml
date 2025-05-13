@@ -15,13 +15,6 @@ spec:
       labels:
         app: loki
     spec:
-      initContainers:
-        - name: init-wal
-          image: busybox
-          command: ["sh", "-c", "mkdir -p /mnt/data/loki && chown -R 10001:10001 /mnt/data/loki"]
-          volumeMounts:
-            - name: loki-storage
-              mountPath: /mnt/data/loki
       containers:
         - name: loki
           image: grafana/loki:2.9.0
@@ -29,17 +22,16 @@ spec:
             - -config.file=/etc/loki/loki.yaml
           ports:
             - containerPort: 3100
-            - containerPort: 9095
           volumeMounts:
-            - name: loki-storage
-              mountPath: /mnt/data/loki
-            - name: loki-config
+            - name: config
               mountPath: /etc/loki
-              subPath: loki.yaml  # Mounts the loki.yaml file from ConfigMap
+            - name: storage
+              mountPath: /data/loki
       volumes:
-        - name: loki-storage
-          persistentVolumeClaim:
-            claimName: loki-pvc
-        - name: loki-config
+        - name: config
           configMap:
-            name: loki-config  # Make sure this matches the ConfigMap name
+            name: loki-config  # Ensure the ConfigMap exists
+        - name: storage
+          hostPath:
+            path: /mnt/data/loki
+            type: DirectoryOrCreate
