@@ -12,4 +12,3 @@ spec:
   storageClassName: gp3-csi
   hostPath:
     path: /mnt/data/loki  # Path on the host node
-    type: DirectoryOrCreate
