@@ -1,0 +1,6 @@
+apiVersion: v2
+name: loki
+version: 0.1.0
+description: A production-ready Helm chart for Grafana Loki with local time-series database storage
+appVersion: "2.9.0"
+type: application
