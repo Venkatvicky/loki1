@@ -11,4 +11,5 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: gp3-csi
   hostPath:
-    path: /mnt/data/loki  # Path on the host node
+    path: /mnt/data/loki
+    type: DirectoryOrCreate  # Ensure this is correctly set
