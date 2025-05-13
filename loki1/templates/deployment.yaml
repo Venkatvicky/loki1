@@ -39,6 +39,6 @@ spec:
         - name: loki-storage
           persistentVolumeClaim:
             claimName: loki-pvc
-        - name: loki-storage
+        - name: wal-storage
           persistentVolumeClaim:
-            claimName: loki-pvc
+            claimName: wal-pvc
