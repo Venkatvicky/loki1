@@ -4,7 +4,6 @@ metadata:
   name: loki-config
   labels:
     app: loki
-  namespace: default
 data:
   loki.yaml: |
-    {{ toYaml .Values.loki.config | indent 4 }}
+{{ .Values.loki.config | toYaml | indent 4 }}
