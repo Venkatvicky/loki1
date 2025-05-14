@@ -23,6 +23,8 @@ spec:
       initContainers:
         - name: volume-permission-fix
           image: busybox:1.35
+          securityContext:
+            runAsUser: 0  # Run as root to ensure we can change permissions
           command:
             - sh
             - -c
@@ -30,7 +32,8 @@ spec:
               echo "[init] Fixing permissions..."
               mkdir -p /mnt/data/loki/{chunks,rules,wal,boltdb-shipper-cache,boltdb-shipper-active} && \
               chown -R 10001:10001 /mnt/data/loki && \
-              chmod -R 770 /mnt/data/loki
+              chmod -R 775 /mnt/data/loki && \
+              ls -la /mnt/data/loki
           volumeMounts:
             - name: loki-storage
               mountPath: /mnt/data/loki
@@ -50,12 +53,25 @@ spec:
               port: 3100
             initialDelaySeconds: 15
             periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 3100
+            initialDelaySeconds: 45
+            periodSeconds: 10
           volumeMounts:
             - name: loki-storage
               mountPath: /mnt/data/loki
             - name: loki-config
               mountPath: /etc/loki/loki.yaml
               subPath: loki.yaml
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
       volumes:
         - name: loki-storage
           persistentVolumeClaim:
