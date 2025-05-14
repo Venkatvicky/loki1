@@ -18,9 +18,14 @@ spec:
       securityContext:
         fsGroup: 10001  # Ensures Loki user has permissions on volumes
       initContainers:
-        - name: init-wal
+        - name: init-permissions
           image: busybox:1.35
-          command: ["sh", "-c", "mkdir -p /mnt/data/loki/{chunks,rules,boltdb-shipper-active,boltdb-shipper-cache} && chown -R 10001:10001 /mnt/data/loki"]
+          command:
+            - sh
+            - -c
+            - >
+              mkdir -p /mnt/data/loki/{chunks,rules,boltdb-shipper-active,boltdb-shipper-cache} &&
+              chown -R 10001:10001 /mnt/data/loki
           volumeMounts:
             - name: loki-storage
               mountPath: /mnt/data/loki
