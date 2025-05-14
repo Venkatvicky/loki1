@@ -1,11 +1,11 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: loki
-  namespace: loki1
   labels:
     app: loki
 spec:
+  serviceName: loki
   replicas: 1
   selector:
     matchLabels:
@@ -17,72 +17,38 @@ spec:
     spec:
       securityContext:
         fsGroup: 10001
-        runAsUser: 10001
         runAsGroup: 10001
-        runAsNonRoot: true
-      initContainers:
-        - name: prepare-storage
-          image: busybox:1.35
-          command:
-            - sh
-            - -c
-            - |
-              echo "Preparing Loki storage..."
-              mkdir -p /mnt/data/loki/{chunks,rules,wal,boltdb-shipper-cache,boltdb-shipper-active}
-              chmod -R 775 /mnt/data/loki
-              ls -la /mnt/data/loki
-          securityContext:
-            runAsUser: 10001
-            runAsGroup: 10001
-          volumeMounts:
-            - name: loki-storage
-              mountPath: /mnt/data/loki
+        runAsUser: 10001
       containers:
-        - name: loki
-          image: grafana/loki:2.9.0
-          args:
-            - -config.file=/etc/loki/loki.yaml
-          ports:
-            - containerPort: 3100
-              name: http
-            - containerPort: 9095
-              name: grpc
-          env:
-            - name: TZ
-              value: UTC
-          readinessProbe:
-            httpGet:
-              path: /ready
-              port: 3100
-            initialDelaySeconds: 15
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /ready
-              port: 3100
-            initialDelaySeconds: 45
-            periodSeconds: 10
-          volumeMounts:
-            - name: loki-storage
-              mountPath: /mnt/data/loki
-            - name: loki-config
-              mountPath: /etc/loki/loki.yaml
-              subPath: loki.yaml
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "500m"
-            limits:
-              memory: "1Gi"
-              cpu: "1"
+      - name: loki
+        image: grafana/loki:2.9.0
+        imagePullPolicy: IfNotPresent
+        args:
+        - "-config.file=/etc/loki/local-config.yaml"
+        ports:
+        - containerPort: 3100
+          name: http
+        - containerPort: 9095
+          name: grpc
+        volumeMounts:
+        - name: config
+          mountPath: /etc/loki
+        - name: storage
+          mountPath: /loki
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 45
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 45
       volumes:
-        - name: loki-storage
-          persistentVolumeClaim:
-            claimName: loki-pvc
-            readOnly: false
-        - name: loki-config
-          configMap:
-            name: loki-config
-            items:
-              - key: loki.yaml
-                path: loki.yaml
+      - name: config
+        configMap:
+          name: loki-config
+      - name: storage
+        persistentVolumeClaim:
+          claimName: loki-storage
