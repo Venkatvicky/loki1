@@ -38,7 +38,7 @@ data:
         cache_location: /data/loki/boltdb-cache
         shared_store: filesystem
       filesystem:
-        directory: /data/loki/chunks
+        directory: /mnt/data/loki  ✅
 
     limits_config:
       enforce_metric_name: false
