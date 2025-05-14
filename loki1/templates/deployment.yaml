@@ -15,10 +15,12 @@ spec:
       labels:
         app: loki
     spec:
+      securityContext:
+        fsGroup: 10001  # Ensures Loki user has permissions on volumes
       initContainers:
         - name: init-wal
-          image: busybox
-          command: ["sh", "-c", "mkdir -p /mnt/data/loki && chown -R 10001:10001 /mnt/data/loki"]
+          image: busybox:1.35
+          command: ["sh", "-c", "mkdir -p /mnt/data/loki/{chunks,rules,boltdb-shipper-active,boltdb-shipper-cache} && chown -R 10001:10001 /mnt/data/loki"]
           volumeMounts:
             - name: loki-storage
               mountPath: /mnt/data/loki
@@ -32,12 +34,21 @@ spec:
               name: http
             - containerPort: 9095
               name: grpc
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3100
+            initialDelaySeconds: 15
+            periodSeconds: 10
           volumeMounts:
             - name: loki-storage
               mountPath: /mnt/data/loki
             - name: loki-config
               mountPath: /etc/loki/loki.yaml
               subPath: loki.yaml
+          securityContext:
+            runAsUser: 10001
+            runAsGroup: 10001
       volumes:
         - name: loki-storage
           persistentVolumeClaim:
