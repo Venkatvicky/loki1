@@ -51,4 +51,4 @@ spec:
           name: loki-config
       - name: storage
         persistentVolumeClaim:
-          claimName: loki-pvc
+          claimName: loki-storage
