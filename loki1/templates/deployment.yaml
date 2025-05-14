@@ -36,8 +36,8 @@ spec:
             - name: loki-storage
               mountPath: /mnt/data/loki
             - name: loki-config
-              mountPath: /etc/loki/loki.yaml  # Changed from /etc/loki
-              subPath: loki.yaml              # Explicitly specify subPath
+              mountPath: /etc/loki/loki.yaml
+              subPath: loki.yaml
       volumes:
         - name: loki-storage
           persistentVolumeClaim:
