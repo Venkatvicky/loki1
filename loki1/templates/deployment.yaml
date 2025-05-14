@@ -16,27 +16,26 @@ spec:
         app: loki
     spec:
       securityContext:
-        fsGroup: 10001  # Applies to all containers for volume group access
+        fsGroup: 10001         # Ensure Loki can access volume
+        runAsUser: 10001       # Loki user ID
+        runAsGroup: 10001
+        runAsNonRoot: true     # Extra security
       initContainers:
-        - name: volume-permission-fix
+        - name: fix-permissions
           image: busybox:1.35
           command:
             - sh
             - -c
             - |
-              echo "[init] Creating folders and fixing permissions..."
-              mkdir -p /mnt/data/loki/{chunks,rules,wal,boltdb-shipper-cache,boltdb-shipper-active}
-              ls -ld /mnt/data/loki
-              chown -R 10001:10001 /mnt/data/loki
+              echo "[init] Fixing volume permissions..." && \
+              mkdir -p /mnt/data/loki/{chunks,rules,wal,boltdb-shipper-cache,boltdb-shipper-active} && \
+              chown -R 10001:10001 /mnt/data/loki && \
               chmod -R 770 /mnt/data/loki
-              echo "[init] Permissions after fix:"
-              ls -ld /mnt/data/loki
           volumeMounts:
             - name: loki-storage
               mountPath: /mnt/data/loki
           securityContext:
-            runAsUser: 0  # Run init container as root
-            runAsGroup: 0
+            runAsUser: 0  # Run as root to change ownership
       containers:
         - name: loki
           image: grafana/loki:2.9.0
@@ -59,9 +58,6 @@ spec:
             - name: loki-config
               mountPath: /etc/loki/loki.yaml
               subPath: loki.yaml
-          securityContext:
-            runAsUser: 10001
-            runAsGroup: 10001
       volumes:
         - name: loki-storage
           persistentVolumeClaim:
