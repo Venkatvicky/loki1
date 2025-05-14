@@ -29,17 +29,22 @@ spec:
             - -config.file=/etc/loki/loki.yaml
           ports:
             - containerPort: 3100
+              name: http
             - containerPort: 9095
+              name: grpc
           volumeMounts:
             - name: loki-storage
               mountPath: /mnt/data/loki
             - name: loki-config
-              mountPath: /etc/loki
-              subPath: loki.yaml
+              mountPath: /etc/loki/loki.yaml  # Changed from /etc/loki
+              subPath: loki.yaml              # Explicitly specify subPath
       volumes:
         - name: loki-storage
           persistentVolumeClaim:
             claimName: loki-pvc
         - name: loki-config
           configMap:
-            name: loki-config  # Ensure this matches the name of your ConfigMap
+            name: loki-config
+            items:
+              - key: loki.yaml
+                path: loki.yaml
